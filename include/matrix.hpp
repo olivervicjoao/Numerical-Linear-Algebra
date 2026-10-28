@@ -39,6 +39,8 @@ private:
 
     void prepare_matrix_obj();
 
+    void verify_symmetry();
+
     std::vector<real> _data_;
 };
 

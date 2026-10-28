@@ -6,6 +6,7 @@
 #include <cctype>
 #include <chrono>
 #include <cmath>
+#include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
@@ -16,10 +17,12 @@
 #include <iostream>
 #include <lapacke.h>
 #include <limits>
+#include <map>
 #include <omp.h>
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
 #define real double
