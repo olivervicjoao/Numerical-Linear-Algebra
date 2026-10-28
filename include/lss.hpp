@@ -6,25 +6,49 @@
 
 namespace lss
 {
-
-namespace lu
+namespace direct
 {
-// Fatoração LU
-// Substituição direta
-// Substituição inversa
-// Resolução do sistema
-}  // namespace lu
+    namespace lu
+    {
+        // LU densa com pivoteamento parcial
+        void factorize(matrix& A, std::vector<unsigned>& pivots);
 
-namespace cholesky
-{
-// Fatoração de Cholesky
-// Resolução do sistema
-}  // namespace cholesky
+        std::vector<real> solve(const matrix& LU, const std::vector<unsigned>& pivots, const std::vector<real>& b);
 
-namespace thomas
-{
-// Resolução de sistemas tridiagonais
-}
+        namespace band
+        {
+            // LU em banda sem pivoteamento
+            void factorize(matrix& A);
+
+            std::vector<real> solve(const matrix& LU, const std::vector<real>& b);
+        }  // namespace band
+    }  // namespace lu
+
+    namespace cholesky
+    {
+        // Cholesky densa: A = LL^T
+        void factorize(matrix& A);
+
+        std::vector<real> solve(const matrix& L, const std::vector<real>& b);
+
+        namespace band
+        {
+            // Cholesky em banda
+            void factorize(matrix& A);
+
+            std::vector<real> solve(const matrix& L, const std::vector<real>& b);
+        }  // namespace band
+    }  // namespace cholesky
+
+    namespace thomas
+    {
+        // Fatoração tridiagonal
+        void factorize(std::vector<real>& lower, std::vector<real>& diagonal, const std::vector<real>& upper);
+
+        // Resolução utilizando a fatoração
+        std::vector<real> solve(const std::vector<real>& lower, const std::vector<real>& diagonal, const std::vector<real>& upper, const std::vector<real>& b);
+    }  // namespace thomas
+}  // namespace direct
 
 }  // namespace lss
 
