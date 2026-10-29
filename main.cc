@@ -1,13 +1,19 @@
 #include "include/matrix.hpp"
+#include <string>
 
-int main(void)
+int main(int argc, char **argv)
 {
+    std::string path_to_matrix(argv[1]);
+    std::string path_to_save(argv[2]);
+
     matrix m1;
-    m1.read_from_file("/home/joaooliveira/Projects/Numerical_Linear_Algebra/matrix/NS/UTM5940/utm5940.mtx");
+    m1.read_from_file(path_to_matrix);
 
     // m1.show();
 
-    int status = std::system("python3 scripts/spy_plot.py /home/joaooliveira/Projects/Numerical_Linear_Algebra/matrix/NS/UTM5940/utm5940.mtx -o tests/");
+    std::string command_for_python = "python3 scripts/spy_plot.py " + path_to_matrix + " -o " + path_to_save;
+
+    int status = std::system(command_for_python.c_str());
 
     if (status != 0)
     {
