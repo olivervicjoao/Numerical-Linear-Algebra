@@ -68,22 +68,22 @@ const double& matrix::operator()(std::size_t i, std::size_t j) const
     return _data_.at(j * stride + band_row);
 }
 
-inline unsigned matrix::rows() const
+unsigned matrix::rows() const
 {
     return this->_rows_;
 }
 
-inline unsigned matrix::cols() const
+unsigned matrix::cols() const
 {
     return this->_cols_;
 }
 
-inline unsigned matrix::bi() const
+unsigned matrix::bi() const
 {
     return this->_lower_bandwidth_;
 }
 
-inline unsigned matrix::bs() const
+unsigned matrix::bs() const
 {
     return this->_upper_bandwidth_;
 }

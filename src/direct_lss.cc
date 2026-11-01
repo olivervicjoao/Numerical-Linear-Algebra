@@ -148,6 +148,12 @@ std::vector<real> lss::direct::lu::solve(const matrix& LU, const std::vector<uns
 void lss::direct::lu::band::factorize(matrix& A)
 {
     std::size_t n = A.rows();
+    std::size_t p = A.bi();
+    std::size_t q = A.bs();
+
+    // if (!(A.rows() == A.cols()))
+    // {
+    // }
 }
 
 std::vector<real> lss::direct::lu::band::solve(const matrix& LU, const std::vector<real>& b)
