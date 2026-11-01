@@ -38,7 +38,7 @@ int main(int argc, char **argv)
     matrix A_lu_band = m1;
 
     // Vetor b para a matriz SPD tridiagonal 5x5
-    std::vector<real> b = { 1.0, 1.0, 0.0, 1.0, 0.0 };
+    std::vector<real> b = { 9.0, 27.0, 45.0, 48.0, 48.0 };
 
     // Fatoração LU em banda (in-place)
     lss::direct::lu::band::factorize(A_lu_band);
