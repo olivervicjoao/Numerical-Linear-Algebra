@@ -38,10 +38,11 @@ int main(int argc, char **argv)
     matrix A_cholesky = m1;
 
     // Vetor b para a matriz SPD 5x5
-    // std::vector<real> b = { 1.0, 1.0, 0.0, 1.0, 0.0 };
-    std::vector<real> b = { 8.0, 10.0, 11.0 };
+    // Vetor do lado direito
+    std::vector<real> b = { 1.0, 1.0, 0.0, 1.0, 0.0 };
 
-    std::vector<real> x = lss::direct::cholesky::solve_cholesky(A_cholesky, b);
+    // Resolver usando Thomas
+    std::vector<real> x = lss::direct::thomas::solve_thomas(m1, b);
 
     // Mostrar solução
     std::cout << std::fixed << std::setprecision(12);
@@ -54,10 +55,10 @@ int main(int argc, char **argv)
 
     std::cout << "]\n" << std::endl;
 
-    // Salvar solução no formato Matrix Market
-    save_vector_mtx(x, path_to_save, "solution_cholesky.mtx");
+    // Salvar solução
+    save_vector_mtx(x, path_to_save, "solution_thomas.mtx");
 
-    // Calcular resíduo relativo usando a matriz ORIGINAL
+    // Calcular resíduo relativo
     real residual = lss::validation::relative_residual_inf(m1, x, b);
 
     std::cout << std::scientific << std::setprecision(12) << "Relative residual = " << residual << '\n';

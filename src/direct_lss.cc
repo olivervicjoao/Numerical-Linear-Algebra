@@ -245,11 +245,96 @@ std::vector<real> lss::direct::cholesky::band::solve(const matrix& L, const std:
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
 
+std::vector<real> lss::direct::thomas::solve_thomas(matrix& A, const std::vector<real>& b)
+{
+    const std::size_t n = A.rows();
+
+    if (n == 0 || A.cols() != n || b.size() != n)
+    {
+        throw std::invalid_argument("Incompatible dimensions!");
+    }
+
+    // Extrair as três diagonais
+    std::vector<real> lower(n - 1);
+    std::vector<real> diagonal(n);
+    std::vector<real> upper(n - 1);
+
+    // Diagonal principal
+    for (std::size_t i = 0; i < n; ++i)
+    {
+        diagonal[i] = A(i, i);
+    }
+
+    // Diagonais inferior e superior
+    for (std::size_t i = 0; i + 1 < n; ++i)
+    {
+        lower[i] = A(i + 1, i);
+        upper[i] = A(i, i + 1);
+    }
+
+    // Fatoração de Thomas
+    lss::direct::thomas::factorize(lower, diagonal, upper);
+
+    // Resolver o sistema
+    return lss::direct::thomas::solve(lower, diagonal, upper, b);
+}
+
 void lss::direct::thomas::factorize(std::vector<real>& lower, std::vector<real>& diagonal, const std::vector<real>& upper)
 {
+    const std::size_t n = diagonal.size();
+
+    if (n == 0 || lower.size() != n - 1 || upper.size() != n - 1)
+    {
+        throw std::invalid_argument("Incompatible dimensions!");
+    }
+
+    for (std::size_t i = 0; i < n - 1; i++)
+    {
+        if (diagonal[i] == 0.0)
+        {
+            throw std::runtime_error("Zero pivot in Thomas factorization!");
+        }
+
+        // Multiplicador de L
+        lower[i] /= diagonal[i];
+
+        // Atualização da diagonal de U
+        diagonal[i + 1] -= lower[i] * upper[i];
+    }
+
+    if (diagonal[n - 1] == 0.0)
+    {
+        throw std::runtime_error("Zero last pivot in Thomas factorization!");
+    }
 }
 
 std::vector<real>
 lss::direct::thomas::solve(const std::vector<real>& lower, const std::vector<real>& diagonal, const std::vector<real>& upper, const std::vector<real>& b)
 {
+    const std::size_t n = diagonal.size();
+
+    if (n == 0 || lower.size() != n - 1 || upper.size() != n - 1 || b.size() != n)
+    {
+        throw std::invalid_argument("Incompatible dimensions!");
+    }
+
+    std::vector<real> x = b;
+
+    // Substituição progressiva: Ly = b
+    for (std::size_t i = 1; i < n; ++i)
+    {
+        x[i] -= lower[i - 1] * x[i - 1];
+    }
+
+    // Substituição regressiva: Ux = y
+    x[n - 1] /= diagonal[n - 1];
+
+    for (std::size_t ii = n - 1; ii > 0; --ii)
+    {
+        const std::size_t i = ii - 1;
+
+        x[i] = (x[i] - upper[i] * x[i + 1]) / diagonal[i];
+    }
+
+    return x;
 }

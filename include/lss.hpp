@@ -47,6 +47,8 @@ namespace direct
 
     namespace thomas
     {
+        std::vector<real> solve_thomas(matrix& A, const std::vector<real>& b);
+
         // Fatoração tridiagonal
         void factorize(std::vector<real>& lower, std::vector<real>& diagonal, const std::vector<real>& upper);
 
