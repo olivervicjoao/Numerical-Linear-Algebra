@@ -21,6 +21,7 @@
 #include <map>
 #include <numeric>
 #include <omp.h>
+#include <queue>
 #include <sstream>
 #include <stdexcept>
 #include <string>

@@ -1,6 +1,7 @@
 #include "include/errors.hpp"
 #include "include/lss.hpp"
 #include "include/matrix.hpp"
+#include "include/rcm.hpp"
 #include "include/utils.hpp"
 
 int main(int argc, char **argv)
@@ -8,7 +9,7 @@ int main(int argc, char **argv)
     std::string path_to_matrix(argv[1]);
     std::string path_to_save(argv[2]);
 
-    matrix m1(false);
+    matrix m1(true);
     m1.read_from_file(path_to_matrix);
 
     // m1.show();
@@ -41,7 +42,7 @@ int main(int argc, char **argv)
     std::vector<real> b(m1.rows(), 1.0);
 
     // Fatoração e resolução usando Cholesky em banda
-    std::vector<real> x = lss::direct::cholesky::band::solve_cholesky_band(A_cholesky_band, b);
+    std::vector<real> x = lss::direct::cholesky::solve_cholesky(A_cholesky_band, b);
 
     // Mostrar solução
     std::cout << std::fixed << std::setprecision(12);
