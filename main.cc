@@ -38,7 +38,7 @@ int main(int argc, char **argv)
     matrix A_cholesky_band = m1;
 
     // Vetor b para a matriz SPD tridiagonal 5x5
-    std::vector<real> b = { 1.0, 1.0, 0.0, 1.0, 0.0 };
+    std::vector<real> b(m1.rows(), 1.0);
 
     // Fatoração e resolução usando Cholesky em banda
     std::vector<real> x = lss::direct::cholesky::band::solve_cholesky_band(A_cholesky_band, b);
