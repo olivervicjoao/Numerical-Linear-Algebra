@@ -27,7 +27,7 @@ matrix::matrix(bool dense)
     this->_storage_size_bytes_ = 0.0;
 }
 
-double& matrix::operator()(std::size_t i, std::size_t j)
+real& matrix::operator()(std::size_t i, std::size_t j)
 {
     if (i >= _rows_ || j >= _cols_)
         throw std::out_of_range("Matrix index out of range");
@@ -47,7 +47,7 @@ double& matrix::operator()(std::size_t i, std::size_t j)
     return _data_.at(j * stride + band_row);
 }
 
-const double& matrix::operator()(std::size_t i, std::size_t j) const
+const real& matrix::operator()(std::size_t i, std::size_t j) const
 {
     if (i >= _rows_ || j >= _cols_)
         throw std::out_of_range("Matrix index out of range");
@@ -58,7 +58,7 @@ const double& matrix::operator()(std::size_t i, std::size_t j) const
     if ((i >= j && i - j > _lower_bandwidth_) || (j > i && j - i > _upper_bandwidth_))
     {
         // Referencia constante segura: o zero nao pode ser alterado.
-        static const double zero = 0.0;
+        static const real zero = 0.0;
         return zero;
     }
 

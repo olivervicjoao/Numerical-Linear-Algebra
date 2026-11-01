@@ -17,8 +17,8 @@ public:
     unsigned rows() const;
     unsigned cols() const;
 
-    double&       operator()(std::size_t i, std::size_t j);
-    const double& operator()(std::size_t i, std::size_t j) const;
+    real&       operator()(std::size_t i, std::size_t j);
+    const real& operator()(std::size_t i, std::size_t j) const;
 
     void reverse_Cuthill_McKee();
 
