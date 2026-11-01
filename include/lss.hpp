@@ -39,6 +39,8 @@ namespace direct
 
         namespace band
         {
+            std::vector<real> solve_cholesky_band(matrix& A, const std::vector<real>& b);
+
             // Cholesky em banda
             void factorize(matrix& A);
 

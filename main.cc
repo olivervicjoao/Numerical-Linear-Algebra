@@ -35,16 +35,13 @@ int main(int argc, char **argv)
     }
 
     // Preserva a matriz original
-    matrix A_lu_band = m1;
+    matrix A_cholesky_band = m1;
 
     // Vetor b para a matriz SPD tridiagonal 5x5
-    std::vector<real> b = { 9.0, 27.0, 45.0, 48.0, 48.0 };
+    std::vector<real> b = { 1.0, 1.0, 0.0, 1.0, 0.0 };
 
-    // Fatoração LU em banda (in-place)
-    lss::direct::lu::band::factorize(A_lu_band);
-
-    // Resolução do sistema LUx = b
-    std::vector<real> x = lss::direct::lu::band::solve(A_lu_band, b);
+    // Fatoração e resolução usando Cholesky em banda
+    std::vector<real> x = lss::direct::cholesky::band::solve_cholesky_band(A_cholesky_band, b);
 
     // Mostrar solução
     std::cout << std::fixed << std::setprecision(12);
@@ -57,10 +54,10 @@ int main(int argc, char **argv)
 
     std::cout << "]\n" << std::endl;
 
-    // Salvar solução no formato Matrix Market
-    save_vector_mtx(x, path_to_save, "solution_lu_band.mtx");
+    // Salvar solução
+    save_vector_mtx(x, path_to_save, "solution_cholesky_band.mtx");
 
-    // Calcular resíduo relativo usando a matriz ORIGINAL
+    // Calcular resíduo relativo com a matriz ORIGINAL
     real residual = lss::validation::relative_residual_inf(m1, x, b);
 
     std::cout << std::scientific << std::setprecision(12) << "Relative residual = " << residual << '\n';
