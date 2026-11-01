@@ -1,4 +1,7 @@
 #include "../include/lss.hpp"
+#include <cmath>
+#include <cstddef>
+#include <vector>
 namespace
 {
 std::size_t find_pivot(const matrix& A, std::size_t k)
@@ -154,10 +157,82 @@ std::vector<real> lss::direct::lu::band::solve(const matrix& LU, const std::vect
 
 void lss::direct::cholesky::factorize(matrix& A)
 {
+    if (A.rows() == 0 || A.rows() != A.cols())
+    {
+        throw std::invalid_argument("Cholesky requires a non-empty square matrix!");
+    }
+
+    for (std::size_t k = 0; k < A.cols(); k++)
+    {
+        // Detecção de pivô negativo
+        if (!(A(k, k) > 0.0) || !std::isfinite(A(k, k)))
+        {
+            throw std::runtime_error("Cholesky factorization failed: invalid pivot!");
+        }
+
+        // Elemento da diagonal principal
+        A(k, k) = std::sqrt(A(k, k));
+
+        // Calcular coluna k abaixo da diagonal
+        for (std::size_t i = k + 1; i < A.cols(); i++)
+        {
+            A(i, k) /= A(k, k);
+        }
+
+        // Atualizar a submatriz restante
+        for (std::size_t j = k + 1; j < A.cols(); j++)
+        {
+            for (std::size_t i = j; i < A.cols(); i++)
+            {
+                A(i, j) -= A(i, k) * A(j, k);
+            }
+        }
+    }
 }
 
 std::vector<real> lss::direct::cholesky::solve(const matrix& L, const std::vector<real>& b)
 {
+    const std::size_t n = L.rows();
+
+    if (n == 0 || L.cols() != n || b.size() != n)
+    {
+        throw std::invalid_argument("Incompatible dimensions!");
+    }
+
+    std::vector<real> x = b;
+
+    // Substituição progressiva: Ly = b
+    for (std::size_t i = 0; i < n; i++)
+    {
+        for (std::size_t j = 0; j < i; j++)
+        {
+            x[i] -= L(i, j) * x[j];
+        }
+
+        x[i] /= L(i, i);
+    }
+
+    // Substituição regressiva: Lᵀx = y
+    for (std::size_t ii = n; ii > 0; --ii)
+    {
+        const std::size_t i = ii - 1;
+
+        for (std::size_t j = i + 1; j < n; j++)
+        {
+            x[i] -= L(j, i) * x[j];
+        }
+
+        x[i] /= L(i, i);
+    }
+
+    return x;
+}
+
+std::vector<real> lss::direct::cholesky::solve_cholesky(matrix& A, const std::vector<real>& b)
+{
+    lss::direct::cholesky::factorize(A);
+
+    return lss::direct::cholesky::solve(A, b);
 }
 
 void lss::direct::cholesky::band::factorize(matrix& A)

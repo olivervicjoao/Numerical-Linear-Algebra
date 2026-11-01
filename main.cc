@@ -35,27 +35,27 @@ int main(int argc, char **argv)
     }
 
     // Preserva a matriz original
-    matrix A_lu = m1;
+    matrix A_cholesky = m1;
 
-    // Testando aqui com uma matriz pequena, que eu conheço a solução analítica
-    // std::vector<real> b(A_lu.rows());
-    // b[0] = 1, b[1] = 1, b[2] = 0, b[3] = 1, b[4] = 0;
-    // std::vector<real> b = { 1.0, 1.0, 0.0, 0.0, 1.0 };
-    std::vector<real> b = { 12.0, -5.0, 3.0 };
+    // Vetor b para a matriz SPD 5x5
+    // std::vector<real> b = { 1.0, 1.0, 0.0, 1.0, 0.0 };
+    std::vector<real> b = { 8.0, 10.0, 11.0 };
 
-    // Fatora e resolve usando a cópia
-    std::vector<real> x = lss::direct::lu::solve_LU(A_lu, b);
+    std::vector<real> x = lss::direct::cholesky::solve_cholesky(A_cholesky, b);
 
     // Mostrar solução
     std::cout << std::fixed << std::setprecision(12);
-    std::cout << "\nSolution = [" << " ";
-    for (std::size_t i = 0; i < b.size(); ++i)
+    std::cout << "\nSolution = [ ";
+
+    for (std::size_t i = 0; i < x.size(); ++i)
     {
-        std::cout << "[" << x[i] << "]" << " ";
+        std::cout << "[" << x[i] << "] ";
     }
+
     std::cout << "]\n" << std::endl;
 
-    save_vector_mtx(x, path_to_save, "solution_lu.mtx");
+    // Salvar solução no formato Matrix Market
+    save_vector_mtx(x, path_to_save, "solution_cholesky.mtx");
 
     // Calcular resíduo relativo usando a matriz ORIGINAL
     real residual = lss::validation::relative_residual_inf(m1, x, b);

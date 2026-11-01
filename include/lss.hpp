@@ -29,6 +29,8 @@ namespace direct
 
     namespace cholesky
     {
+        std::vector<real> solve_cholesky(matrix& A, const std::vector<real>& b);
+
         // Cholesky densa: A = LL^T
         void factorize(matrix& A);
 
