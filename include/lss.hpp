@@ -8,8 +8,11 @@ namespace lss
 {
 namespace direct
 {
+
     namespace lu
     {
+
+        std::vector<real> solve_LU(matrix& A, const std::vector<real>& b);
         // LU densa com pivoteamento parcial
         void factorize(matrix& A, std::vector<unsigned>& pivots);
 

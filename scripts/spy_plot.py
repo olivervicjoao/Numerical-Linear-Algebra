@@ -29,12 +29,12 @@ def generate_spy_plot(
     # ---------------------------------------
     A = mmread(mtx_path, spmatrix=False)
 
-    A = A.tocsr() if issparse(A) else csr_array(A)
+    A = A.tocsr() if issparse(A) else csr_array(A)  # type: ignore[attr-defined]
 
     A.sum_duplicates()
     A.eliminate_zeros()
 
-    rows, cols = A.shape
+    rows, cols = A.shape  # type: ignore[attr-defined]
     nnz = A.nnz
     density = 100.0 * nnz / (rows * cols)
 

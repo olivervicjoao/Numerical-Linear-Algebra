@@ -12,12 +12,14 @@
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
+#include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <lapacke.h>
 #include <limits>
 #include <map>
+#include <numeric>
 #include <omp.h>
 #include <sstream>
 #include <stdexcept>
