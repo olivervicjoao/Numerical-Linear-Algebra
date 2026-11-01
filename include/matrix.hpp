@@ -14,8 +14,8 @@ public:
 
     real get(unsigned i, unsigned j) const;
 
-    unsigned rows() const;
-    unsigned cols() const;
+    inline unsigned rows() const;
+    inline unsigned cols() const;
 
     double&       operator()(std::size_t i, std::size_t j);
     const double& operator()(std::size_t i, std::size_t j) const;
@@ -23,6 +23,9 @@ public:
     void reverse_Cuthill_McKee();
 
     void show();
+
+    inline unsigned bi() const;
+    inline unsigned bs() const;
 
 private:
     unsigned _rows_;
