@@ -20,6 +20,7 @@ namespace direct
 
         namespace band
         {
+            std::vector<real> solve_LU_band(matrix& A, const std::vector<real>& b);
             // LU em banda sem pivoteamento
             void factorize(matrix& A);
 

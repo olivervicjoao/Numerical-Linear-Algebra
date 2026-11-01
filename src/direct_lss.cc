@@ -145,19 +145,100 @@ std::vector<real> lss::direct::lu::solve(const matrix& LU, const std::vector<uns
     return x;
 }
 
+std::vector<real> lss::direct::lu::band::solve_LU_band(matrix& A, const std::vector<real>& b)
+{
+    lss::direct::lu::band::factorize(A);
+
+    return lss::direct::lu::band::solve(A, b);
+}
+
 void lss::direct::lu::band::factorize(matrix& A)
 {
-    std::size_t n = A.rows();
-    std::size_t p = A.bi();
-    std::size_t q = A.bs();
+    const std::size_t n = A.rows();
 
-    // if (!(A.rows() == A.cols()))
-    // {
-    // }
+    if (n == 0 || A.cols() != n)
+    {
+        throw std::invalid_argument("Incompatible dimensions!");
+    }
+
+    const std::size_t p = A.bi();
+    const std::size_t q = A.bs();
+
+    for (std::size_t k = 0; k < n; k++)
+    {
+        // Verificar pivô
+        if (A(k, k) == 0.0)
+        {
+            throw std::runtime_error("Zero pivot in band LU factorization!");
+        }
+
+        // Limites da banda na etapa k
+        const std::size_t i_max = std::min(n - 1, k + p);
+        const std::size_t j_max = std::min(n - 1, k + q);
+
+        // Calcular os multiplicadores de L
+        for (std::size_t i = k + 1; i <= i_max; i++)
+        {
+            A(i, k) /= A(k, k);
+        }
+
+        // Atualizar a submatriz restante
+        for (std::size_t j = k + 1; j <= j_max; j++)
+        {
+            for (std::size_t i = k + 1; i <= i_max; i++)
+            {
+                A(i, j) -= A(i, k) * A(k, j);
+            }
+        }
+    }
 }
 
 std::vector<real> lss::direct::lu::band::solve(const matrix& LU, const std::vector<real>& b)
 {
+    const std::size_t n = LU.rows();
+
+    if (n == 0 || LU.cols() != n || b.size() != n)
+    {
+        throw std::invalid_argument("Incompatible dimensions!");
+    }
+
+    const std::size_t p = LU.bi();
+    const std::size_t q = LU.bs();
+
+    std::vector<real> x = b;
+
+    // Substituição progressiva: Ly = b
+    for (std::size_t i = 0; i < n; i++)
+    {
+        const std::size_t j_min = (i >= p) ? i - p : 0;
+
+        for (std::size_t j = j_min; j < i; j++)
+        {
+            x[i] -= LU(i, j) * x[j];
+        }
+    }
+
+    // Substituição regressiva: Ux = y
+    for (std::size_t ii = n; ii > 0; --ii)
+    {
+        const std::size_t i = ii - 1;
+
+        const std::size_t j_max = i + std::min(q, n - 1 - i);
+
+        for (std::size_t j = i + 1; j <= j_max; j++)
+        {
+            x[i] -= LU(i, j) * x[j];
+        }
+
+        if (LU(i, i) == 0.0)
+        {
+            throw std::runtime_error("Zero pivot in band LU solve!");
+        }
+
+        x[i] /= LU(i, i);
+    }
+
+    return x;
 }
 
 //-----------------------------------------------------------------------------------------------------------------------------------------

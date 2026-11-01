@@ -8,7 +8,7 @@ int main(int argc, char **argv)
     std::string path_to_matrix(argv[1]);
     std::string path_to_save(argv[2]);
 
-    matrix m1;
+    matrix m1(false);
     m1.read_from_file(path_to_matrix);
 
     // m1.show();
@@ -35,14 +35,16 @@ int main(int argc, char **argv)
     }
 
     // Preserva a matriz original
-    matrix A_cholesky = m1;
+    matrix A_lu_band = m1;
 
-    // Vetor b para a matriz SPD 5x5
-    // Vetor do lado direito
+    // Vetor b para a matriz SPD tridiagonal 5x5
     std::vector<real> b = { 1.0, 1.0, 0.0, 1.0, 0.0 };
 
-    // Resolver usando Thomas
-    std::vector<real> x = lss::direct::thomas::solve_thomas(m1, b);
+    // Fatoração LU em banda (in-place)
+    lss::direct::lu::band::factorize(A_lu_band);
+
+    // Resolução do sistema LUx = b
+    std::vector<real> x = lss::direct::lu::band::solve(A_lu_band, b);
 
     // Mostrar solução
     std::cout << std::fixed << std::setprecision(12);
@@ -55,10 +57,10 @@ int main(int argc, char **argv)
 
     std::cout << "]\n" << std::endl;
 
-    // Salvar solução
-    save_vector_mtx(x, path_to_save, "solution_thomas.mtx");
+    // Salvar solução no formato Matrix Market
+    save_vector_mtx(x, path_to_save, "solution_lu_band.mtx");
 
-    // Calcular resíduo relativo
+    // Calcular resíduo relativo usando a matriz ORIGINAL
     real residual = lss::validation::relative_residual_inf(m1, x, b);
 
     std::cout << std::scientific << std::setprecision(12) << "Relative residual = " << residual << '\n';
