@@ -27,6 +27,37 @@ matrix::matrix(bool dense)
     this->_storage_size_bytes_ = 0.0;
 }
 
+real matrix::get(std::size_t i, std::size_t j) const
+{
+    // Verificar se os índices são válidos
+    if (i >= this->_rows_ || j >= this->_cols_)
+    {
+        throw std::out_of_range("Matrix index out of range!");
+    }
+
+    // Matriz densa
+    if (this->_dense_)
+    {
+        return (*this)(i, j);
+    }
+
+    // Matriz em banda: verificar se o elemento
+    // está fora da banda inferior
+    if (i > j && (i - j) > this->_lower_bandwidth_)
+    {
+        return 0.0;
+    }
+
+    // Verificar se está fora da banda superior
+    if (j > i && (j - i) > this->_upper_bandwidth_)
+    {
+        return 0.0;
+    }
+
+    // Elemento dentro da banda
+    return (*this)(i, j);
+}
+
 real& matrix::operator()(std::size_t i, std::size_t j)
 {
     if (i >= _rows_ || j >= _cols_)

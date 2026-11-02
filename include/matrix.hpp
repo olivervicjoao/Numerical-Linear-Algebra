@@ -12,7 +12,7 @@ public:
 
     void read_from_file(std::string file);
 
-    real get(unsigned i, unsigned j) const;
+    real get(std::size_t i, std::size_t j) const;
 
     unsigned rows() const;
     unsigned cols() const;

@@ -14,6 +14,7 @@
 #include <ctime>
 #include <filesystem>
 #include <fstream>
+#include <functional>
 #include <iomanip>
 #include <iostream>
 #include <lapacke.h>
@@ -22,6 +23,7 @@
 #include <numeric>
 #include <omp.h>
 #include <queue>
+#include <random>
 #include <sstream>
 #include <stdexcept>
 #include <string>

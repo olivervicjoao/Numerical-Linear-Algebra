@@ -1,67 +1,101 @@
-#include "include/errors.hpp"
-#include "include/lss.hpp"
-#include "include/matrix.hpp"
-#include "include/rcm.hpp"
-#include "include/utils.hpp"
+#include "include/benchmarks.hpp"
+
+#include <cstdlib>
+#include <filesystem>
+#include <iostream>
+#include <stdexcept>
+#include <string>
+
+namespace
+{
+void usage(const char *exe)
+{
+    std::cerr << "Usage:\n"
+              << "  " << exe << " --matrix PATH --output DIR [--repeats 5] [--spy]\n"
+              << "  " << exe << " --thomas-scale N --output DIR [--repeats 5]\n"
+              << "  " << exe << " --dense-scale N --output DIR [--repeats 5]\n";
+}
+
+std::size_t number(const std::string& str)
+{
+    std::size_t              end   = 0;
+    const unsigned long long value = std::stoull(str, &end);
+    if (end != str.size() || value == 0)
+        throw std::invalid_argument("Expected a positive integer: " + str);
+    return static_cast<std::size_t>(value);
+}
+}  // namespace
 
 int main(int argc, char **argv)
 {
-    std::string path_to_matrix(argv[1]);
-    std::string path_to_save(argv[2]);
-
-    matrix m1(true);
-    m1.read_from_file(path_to_matrix);
-
-    // m1.show();
-
-    if (std::atoi(argv[3]) == 1)
+    try
     {
-        std::string command_for_python = "python3 scripts/spy_plot.py " + path_to_matrix + " -o " + path_to_save;
-
-        int status = std::system(command_for_python.c_str());
-
-        if (status != 0)
+        if (argc == 1)
         {
-            std::cerr << "Error generating sparsity plot!\n";
+            usage(argv[0]);
+            return EXIT_FAILURE;
         }
+
+        std::string           mode, matrix_path;
+        std::size_t           n = 0;
+        std::filesystem::path output;
+        benchmarks::Options   options;
+
+        for (int i = 1; i < argc; ++i)
+        {
+            const std::string arg = argv[i];
+            if (arg == "--spy")
+            {
+                options.spy_plots = true;
+                continue;
+            }
+            if (arg == "--help" || arg == "-h")
+            {
+                usage(argv[0]);
+                return EXIT_SUCCESS;
+            }
+            if (i + 1 >= argc)
+                throw std::invalid_argument("Missing value for " + arg);
+            const std::string value = argv[++i];
+            if (arg == "--matrix")
+            {
+                mode        = "matrix";
+                matrix_path = value;
+            }
+            else if (arg == "--thomas-scale")
+            {
+                mode = "thomas";
+                n    = number(value);
+            }
+            else if (arg == "--dense-scale")
+            {
+                mode = "dense";
+                n    = number(value);
+            }
+            else if (arg == "--output")
+                output = value;
+            else if (arg == "--repeats")
+                options.repeats = number(value);
+            else
+                throw std::invalid_argument("Unknown option: " + arg);
+        }
+        if (output.empty())
+            throw std::invalid_argument("--output is required");
+        if (options.repeats < 5)
+            throw std::invalid_argument("At least five repeats required");
+        if (mode == "matrix" && !matrix_path.empty())
+            benchmarks::run_matrix(matrix_path, output, options);
+        else if (mode == "thomas" && n > 0)
+            benchmarks::run_thomas_scale(n, output, options);
+        else if (mode == "dense" && n > 0)
+            benchmarks::run_dense_scale(n, output, options);
+        else
+            throw std::invalid_argument("Select a valid mode");
+        return EXIT_SUCCESS;
     }
-
-    std::string command_folder = "python3 scripts/create_folder.py " + path_to_save;
-
-    int status2 = std::system(command_folder.c_str());
-
-    if (status2 != 0)
+    catch (const std::exception& e)
     {
-        std::cerr << "Error creating output directory!\n";
+        std::cerr << "Error: " << e.what() << '\n';
+        return EXIT_FAILURE;
     }
-
-    // Preserva a matriz original
-    matrix A_cholesky_band = m1;
-
-    // Vetor b para a matriz SPD tridiagonal 5x5
-    std::vector<real> b(m1.rows(), 1.0);
-
-    // Fatoração e resolução usando Cholesky em banda
-    std::vector<real> x = lss::direct::cholesky::solve_cholesky(A_cholesky_band, b);
-
-    // Mostrar solução
-    std::cout << std::fixed << std::setprecision(12);
-    std::cout << "\nSolution = [ ";
-
-    for (std::size_t i = 0; i < x.size(); ++i)
-    {
-        std::cout << "[" << x[i] << "] ";
-    }
-
-    std::cout << "]\n" << std::endl;
-
-    // Salvar solução
-    save_vector_mtx(x, path_to_save, "solution_cholesky_band.mtx");
-
-    // Calcular resíduo relativo com a matriz ORIGINAL
-    real residual = lss::validation::relative_residual_inf(m1, x, b);
-
-    std::cout << std::scientific << std::setprecision(12) << "Relative residual = " << residual << '\n';
-
-    return 0;
 }

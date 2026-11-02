@@ -298,3 +298,6 @@ pyrightconfig.json
 
 tests/**
 nla
+
+matrix/
+matrix/**
