@@ -1,0 +1,213 @@
+
+#!/bin/bash
+#PBS -N alc_final
+#PBS -l select=1:ncpus=1:mpiprocs=1:mem=8gb:host=compute-0-0
+#PBS -l walltime=12:00:00
+#PBS -j oe
+
+set -Eeuo pipefail
+
+# ============================================================
+# SERIAL EXECUTION
+# ============================================================
+
+export OPENBLAS_NUM_THREADS=1
+export OMP_NUM_THREADS=1
+export MKL_NUM_THREADS=1
+export BLIS_NUM_THREADS=1
+export VECLIB_MAXIMUM_THREADS=1
+export NUMEXPR_NUM_THREADS=1
+
+# ============================================================
+# PBS WORK DIRECTORY
+# ============================================================
+
+: "${PBS_O_WORKDIR:?PBS_O_WORKDIR not defined}"
+: "${PBS_JOBID:?PBS_JOBID not defined}"
+
+cd "$PBS_O_WORKDIR"
+
+PROJECT="$PWD"
+JOB_NUMBER="${PBS_JOBID%%.*}"
+
+RUN_ROOT="$PROJECT/cluster_runs"
+RUN_DIR="$RUN_ROOT/$JOB_NUMBER"
+
+mkdir -p "$RUN_ROOT"
+
+if [[ -e "$RUN_DIR" ]]; then
+    echo "ERROR: existing job directory: $RUN_DIR" >&2
+    exit 1
+fi
+
+mkdir -p "$RUN_DIR"
+
+# ============================================================
+# CHECK REQUIRED FILES
+# ============================================================
+
+if [[ ! -x "$PROJECT/nla" ]]; then
+    echo "ERROR: ./nla not found or not executable." >&2
+    exit 1
+fi
+
+for required in \
+    "$PROJECT/scripts/run_experimentos_finais.bash" \
+    "$PROJECT/scripts/run_all_tests.sh" \
+    "$PROJECT/scripts/plot_results.py" \
+    "$PROJECT/matrix/SPD/bcsstk11.mtx" \
+    "$PROJECT/matrix/SPD/bcsstk14.mtx" \
+    "$PROJECT/matrix/NS/sherman4.mtx" \
+    "$PROJECT/matrix/NS/orsreg_1.mtx"
+do
+    if [[ ! -f "$required" ]]; then
+        echo "ERROR: missing file: $required" >&2
+        exit 1
+    fi
+done
+
+# ============================================================
+# ISOLATE THIS RUN
+# ============================================================
+
+# Copy scripts into a separate workspace.
+# Symlink matrices and executable to avoid unnecessary copies.
+
+cp -a "$PROJECT/scripts" "$RUN_DIR/scripts"
+
+ln -s "$PROJECT/matrix" "$RUN_DIR/matrix"
+ln -s "$PROJECT/nla" "$RUN_DIR/nla"
+
+if [[ -f "$PROJECT/Makefile" ]]; then
+    cp "$PROJECT/Makefile" "$RUN_DIR/Makefile"
+fi
+
+# ============================================================
+# VERIFY ALLOCATED NODE
+# ============================================================
+
+NODE="$(hostname -s)"
+
+echo "================================================"
+echo "COMPUTATIONAL LINEAR ALGEBRA - FINAL BENCHMARKS"
+echo "================================================"
+echo "PBS job: $PBS_JOBID"
+echo "Node: $NODE"
+echo "Project: $PROJECT"
+echo "Results: $RUN_DIR"
+echo "================================================"
+
+if [[ "$NODE" != "compute-0-0" ]]; then
+    echo "ERROR: wrong compute node: $NODE" >&2
+    exit 1
+fi
+
+# ============================================================
+# CHECK LIBRARIES AND PYTHON
+# ============================================================
+
+if ldd "$RUN_DIR/nla" | grep -q 'not found'; then
+    echo "ERROR: missing shared libraries." >&2
+    ldd "$RUN_DIR/nla" >&2
+    exit 1
+fi
+
+python3 -c 'import numpy, pandas, matplotlib' || {
+    echo "ERROR: Python dependencies unavailable." >&2
+    exit 1
+}
+
+# ============================================================
+# SAVE COMPUTATIONAL ENVIRONMENT
+# ============================================================
+
+{
+    echo "=== JOB ==="
+    echo "PBS_JOBID=$PBS_JOBID"
+    echo "PBS_O_WORKDIR=$PBS_O_WORKDIR"
+    echo "RUN_DIR=$RUN_DIR"
+    echo "NODE=$NODE"
+    echo "START=$(date -Is)"
+
+    echo "=== ALLOCATED NODEFILE ==="
+    if [[ -f "${PBS_NODEFILE:-}" ]]; then
+        cat "$PBS_NODEFILE"
+    fi
+
+    echo "=== SYSTEM ==="
+    uname -a
+
+    if [[ -f /etc/os-release ]]; then
+        cat /etc/os-release
+    fi
+
+    echo "=== CPU ==="
+    lscpu || true
+
+    echo "=== MEMORY ==="
+    free -h || true
+
+    echo "=== COMPILER ==="
+    g++ --version || true
+
+    echo "=== LINKED LIBRARIES ==="
+    ldd "$RUN_DIR/nla" || true
+
+    echo "=== LOADED MODULES ==="
+    if type module >/dev/null 2>&1; then
+        module list 2>&1 || true
+    fi
+
+    echo "=== THREAD CONFIGURATION ==="
+    env | grep -E \
+        '^(OPENBLAS|OMP|MKL|BLIS|VECLIB|NUMEXPR)_.*THREADS=' \
+        || true
+
+    echo "=== EXECUTABLE SHA256 ==="
+    sha256sum "$RUN_DIR/nla" || true
+
+    echo "=== MAKEFILE ==="
+    if [[ -f "$RUN_DIR/Makefile" ]]; then
+        cat "$RUN_DIR/Makefile"
+    else
+        echo "Not available"
+    fi
+
+} > "$RUN_DIR/ambiente_computacional_cluster.txt"
+
+# ============================================================
+# EXECUTE ALL FINAL EXPERIMENTS
+# ============================================================
+
+cd "$RUN_DIR"
+
+mkdir -p tests
+
+echo "Starting benchmarks: $(date -Is)"
+
+# Runs:
+# 1. Thomas vs LAPACKE - 20 repetitions
+# 2. Dense LU/Cholesky vs LAPACKE - 5 repetitions
+# 3. Four selected real matrices - 20 repetitions
+# 4. CSV numerical/statistical validation, if available
+
+bash scripts/run_experimentos_finais.bash \
+    2>&1 | tee "$RUN_DIR/execucao_cluster.log"
+
+# ============================================================
+# ARCHIVE RESULTS
+# ============================================================
+
+tar -czf "$RUN_DIR/resultados_cluster.tar.gz" \
+    --exclude='*.mtx' \
+    -C "$RUN_DIR" \
+    tests \
+    ambiente_computacional_cluster.txt \
+    execucao_cluster.log
+
+echo "================================================"
+echo "EXPERIMENTS COMPLETED"
+echo "End: $(date -Is)"
+echo "Results: $RUN_DIR/tests"
+echo "Archive: $RUN_DIR/resultados_cluster.tar.gz"
+echo "================================================"
