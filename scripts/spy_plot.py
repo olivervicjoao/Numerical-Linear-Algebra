@@ -27,7 +27,7 @@ def generate_spy_plot(
     # ---------------------------------------
     # 1. Leitura da matriz
     # ---------------------------------------
-    A = mmread(mtx_path, spmatrix=False)
+    A = mmread(mtx_path)
 
     A = A.tocsr() if issparse(A) else csr_array(A)  # type: ignore[attr-defined]
 
