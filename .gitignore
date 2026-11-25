@@ -1,5 +1,5 @@
-# Created by https://www.toptal.com/developers/gitignore/api/c++,python,linux,macos,c
-# Edit at https://www.toptal.com/developers/gitignore?templates=c++,python,linux,macos,c
+# Created by https://www.toptal.com/developers/gitignore/api/c,cmake,linux,macos,python,cuda
+# Edit at https://www.toptal.com/developers/gitignore?templates=c,cmake,linux,macos,python,cuda
 
 ### C ###
 # Prerequisites
@@ -55,24 +55,32 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
-### C++ ###
-# Prerequisites
+### CMake ###
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Testing
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps
 
-# Compiled Object files
-*.slo
+### CMake Patch ###
+CMakeUserPresets.json
 
-# Precompiled Headers
+# External projects
+*-prefix/
 
-# Compiled Dynamic libraries
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-
-# Executables
+### CUDA ###
+*.i
+*.ii
+*.gpu
+*.ptx
+*.cubin
+*.fatbin
 
 ### Linux ###
 *~
@@ -293,11 +301,4 @@ poetry.toml
 # LSP config files
 pyrightconfig.json
 
-# End of https://www.toptal.com/developers/gitignore/api/c++,python,linux,macos,c
-
-
-tests/**
-nla
-
-matrix/
-matrix/**
+# End of https://www.toptal.com/developers/gitignore/api/c,cmake,linux,macos,python,cuda
