@@ -23,9 +23,6 @@ set(PROJECT_CODENAME "Archimedes")
 # set(PROJECT_CODENAME "Arnoldi")
 # set(PROJECT_CODENAME "Krylov")
 
-
-
-
 if(APPLE)
   if(NOT CMAKE_C_COMPILER_ID STREQUAL "AppleClang")
     message(FATAL_ERROR "On macOS, configure with Apple Clang (/usr/bin/clang).")
